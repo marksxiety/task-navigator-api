@@ -6,20 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
-    protected $fillable = ['status_id', 'percentage', 'subject', 'system_id', 'priority_id', 'definition'];
+    protected $fillable = ['subject', 'system_id', 'mode_id', 'definition', 'status_id', 'percentage', 'added_by'];
 
     public function status()
     {
-        return $this->belongsTo(Status::class);
+        return $this->belongsTo(Status::class, 'status_id');
     }
 
     public function system()
     {
-        return $this->belongsTo(System::class);
+        return $this->belongsTo(System::class, 'system_id');
     }
 
-    public function priority()
+    public function mode()
     {
-        return $this->belongsTo(Status::class, 'priority_id');
+        return $this->belongsTo(Mode::class, 'mode_id');
     }
 }
