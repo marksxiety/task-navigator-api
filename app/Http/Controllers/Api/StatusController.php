@@ -1,65 +1,90 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Models\Status;
+use App\Http\Resources\StatusResource;
 
 class StatusController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
-        //
+        $status = Status::all();
+        return $status->isEmpty()
+            ? response()->json(['message' => 'No data available'], 200)
+            : StatusResource::collection($status);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+     public function store(Request $request)
+     {
+         $validator = Validator::make($request->all(), [
+             'name' => 'required|string|max:255'
+         ]);
+     
+         if ($validator->fails()) {
+             return response()->json([
+                 'message' => 'Field are required',
+                 'error' => $validator->messages()
+             ], 422);
+         }
+     
+         $request->validate([
+             'name' => 'required|string|max:255',
+         ]);
+     
+         $status = Status::create([
+             'name' => $request->name,
+         ]);
+     
+         return response()->json([
+             'message' => 'Created Successfully',
+             'data' => new StatusResource($status)
+         ], 201);
+     }
+
+    public function show(Status $status)
     {
-        //
+        return new StatusResource($status);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+    public function update(Request $request, Status $status)
     {
-        //
+        $validator = Validator::make($request->all(),[
+            'name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Field is required',
+                'error' => $validator->messages()
+            ], 422);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $status->update([
+            'name' => $request->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Updated Successfully',
+            'data' => new StatusResource($status)
+        ], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function destroy(Status $status)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $status->delete();
+        return response()->json([
+            'message' => 'Deleted Successfully',
+            'data' => new StatusResource(resource: $status)
+        ],200);
     }
 }
