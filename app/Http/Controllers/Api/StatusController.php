@@ -27,7 +27,7 @@ class StatusController extends Controller
      
          if ($validator->fails()) {
              return response()->json([
-                 'message' => 'Field are required',
+                 'message' => 'Invalid Request',
                  'error' => $validator->messages()
              ], 422);
          }
