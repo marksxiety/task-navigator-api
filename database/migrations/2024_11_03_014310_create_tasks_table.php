@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id(); // Auto increment and primary key
-            $table->foreignId('status_id')->constrained('statuses')->onDelete('cascade'); 
-            $table->string('percentage')->default('0%');
             $table->string('subject');
             $table->foreignId('system_id')->constrained('systems')->onDelete('cascade'); 
             $table->foreignId('priority_id')->constrained('statuses')->onDelete('cascade');
             $table->text('definition');
+            $table->foreignId('status_id')->constrained('statuses')->onDelete('cascade'); 
+            $table->decimal('percentage', 5, 2)->default(0.00);
+            $table->string('added_by');
             $table->timestamps();
         });
     }
