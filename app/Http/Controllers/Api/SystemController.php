@@ -1,9 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\SystemResource;
 use Illuminate\Http\Request;
+use App\Models\System;
+use Illuminate\Support\Facades\Validator;
 
 class SystemController extends Controller
 {
@@ -12,54 +15,78 @@ class SystemController extends Controller
      */
     public function index()
     {
-        //
+        $status = System::all();
+        return $status->isEmpty()
+            ? response()->json(['message' => 'No data available'], 200)
+            : SystemResource::collection($status);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request, System $system)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid Request',
+                'error' => $validator->messages()
+            ], 422);
+        }
+    
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+    
+        $system = System::create([
+            'name' => $request->name,
+        ]);
+    
+        return response()->json([
+            'message' => 'Created Successfully',
+            'data' => new SystemResource($system)
+        ], 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+    public function show(System $system)
     {
-        //
+        return new SystemResource($system);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function update(Request $request, System $system)
     {
-        //
+        $validator = Validator::make($request->all(),[
+            'name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid Request',
+                'error' => $validator->messages()
+            ], 422);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $system->update([
+            'name' => $request->name,
+        ]);
+
+        return response()->json([
+            'message' => 'Updated Successfully',
+            'data' => new SystemResource($system)
+        ], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function destroy(System $system)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $system->delete();
+        return response()->json([
+            'message' => 'Deleted Successfully',
+            'data' => new SystemResource(resource: $system)
+        ],200);
     }
 }
