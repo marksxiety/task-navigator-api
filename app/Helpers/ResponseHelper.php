@@ -4,21 +4,21 @@ namespace App\Helpers;
 
 class ResponseHelper
 {
-    public static function success($data = [], $message = 'Request was successful', $status = 200)
+    public static function success($message, $data = [], $statusCode = 200)
     {
         return response()->json([
             'success' => true,
             'message' => $message,
             'data' => $data,
-        ], $status);
+        ], $statusCode);
     }
 
-    public static function error($message = 'An error occurred', $status = 500)
+    public static function error($message, $data = [], $statusCode = 400)
     {
         return response()->json([
             'success' => false,
             'message' => $message,
-            'data' => [],
-        ], $status);
+            'data' => $data,
+        ], $statusCode);
     }
 }
