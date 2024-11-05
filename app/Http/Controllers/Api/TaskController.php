@@ -7,113 +7,87 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Http\Resources\TaskResource;
 use Illuminate\Support\Facades\Validator;
+use App\Helpers\ResponseHelper;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $status = Task::all();
-        return $status->isEmpty()
-            ? response()->json(['message' => 'No data available'], 200)
-            : TaskResource::collection($status);
+        try {
+            $tasks = Task::all();
+
+            if ($tasks->isEmpty()) {
+                return ResponseHelper::success('No data available', [], 200);
+            }
+
+            return ResponseHelper::success('Request Successful', TaskResource::collection($tasks), 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'subject' => 'required|string|max:255',
-            'system_id' => 'required|integer|exists:systems,id',       
-            'mode_id' => 'required|integer|exists:modes,id', 
+            'system_id' => 'required|integer|exists:systems,id',
+            'mode_id' => 'required|integer|exists:modes,id',
             'definition' => 'required|string|max:999',
-            'status_id' => 'required|integer|exists:statuses,id',     
+            'status_id' => 'required|integer|exists:statuses,id',
             'percentage' => 'required|numeric|min:1|max:100',
             'added_by' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid Request',
-                'error' => $validator->messages()
-            ], 422);
+            return ResponseHelper::error('Invalid Request', $validator->messages(), 422);
         }
 
-        $task = Task::create([
-            'subject' => $request->subject,
-            'system_id' => $request->system_id,
-            'mode_id' => $request->mode_id,
-            'definition' => $request->definition,
-            'status_id' => $request->status_id,
-            'percentage' => $request->percentage,
-            'added_by' => $request->added_by,
-        ]);
+        try {
+            $task = Task::create($request->all());
 
-        return response()->json([
-            'message' => 'Created Successfully',
-            'data' => new TaskResource($task)
-        ], 201);
-
+            return ResponseHelper::success('Created Successfully', new TaskResource($task), 201);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 
     public function show(Task $task)
     {
-        return response()->json([
-            'id' => $task->id,
-            'subject' => $task->subject,
-            'system' => $task->system->name,
-            'mode' => $task->mode->name,
-            'definition' => $task->definition,
-            'status' => $task->status->name,
-            'percentage' => $task->percentage,
-            'added_by' => $task->added_by,
-            'created_at' => $task->created_at,
-            'updated_at' => $task->updated_at,
-        ]);
+        return ResponseHelper::success('Request Successful', new TaskResource($task), 200);
     }
 
     public function update(Request $request, Task $task)
     {
         $validator = Validator::make($request->all(), [
             'subject' => 'required|string|max:255',
-            'system_id' => 'required|integer|exists:systems,id',       
-            'mode_id' => 'required|integer|exists:modes,id', 
+            'system_id' => 'required|integer|exists:systems,id',
+            'mode_id' => 'required|integer|exists:modes,id',
             'definition' => 'required|string|max:999',
-            'status_id' => 'required|integer|exists:statuses,id',     
+            'status_id' => 'required|integer|exists:statuses,id',
             'percentage' => 'required|numeric|min:1|max:100',
             'added_by' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid Request',
-                'error' => $validator->messages()
-            ], 422);
+            return ResponseHelper::error('Invalid Request', $validator->messages(), 422);
         }
 
-        $task->update([
-            'subject' => $request->subject,
-            'system_id' => $request->system_id,
-            'mode_id' => $request->mode_id,
-            'definition' => $request->definition,
-            'status_id' => $request->status_id,
-            'percentage' => $request->percentage,
-            'added_by' => $request->added_by,
-        ]);
+        try {
+            $task->update($request->all());
 
-        return response()->json([
-            'message' => 'Updated Successfully',
-            'data' => new TaskResource($task)
-        ], 201);
+            return ResponseHelper::success('Updated Successfully', new TaskResource($task), 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 
     public function destroy(Task $task)
     {
-        $task->delete();
-        return response()->json([
-            'message' => 'Deleted Successfully',
-            'data' => new TaskResource(resource: $task)
-        ],200);
+        try {
+            $task->delete();
+            return ResponseHelper::success('Deleted Successfully', [], 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 }

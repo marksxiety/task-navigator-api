@@ -7,84 +7,79 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Status;
 use App\Http\Resources\StatusResource;
+use App\Helpers\ResponseHelper;
 
 class StatusController extends Controller
 {
-
     public function index()
     {
-        $status = Status::all();
-        return $status->isEmpty()
-            ? response()->json(['message' => 'No data available'], 200)
-            : StatusResource::collection($status);
+        try {
+            $status = Status::all();
+
+            if ($status->isEmpty()) {
+                return ResponseHelper::success('No data available', [], 200);
+            }
+
+            return ResponseHelper::success('Request Successful', StatusResource::collection($status), 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 
-     public function store(Request $request)
-     {
-         $validator = Validator::make($request->all(), [
-             'name' => 'required|string|max:255'
-         ]);
-     
-         if ($validator->fails()) {
-             return response()->json([
-                 'message' => 'Invalid Request',
-                 'error' => $validator->messages()
-             ], 422);
-         }
-     
-         $request->validate([
-             'name' => 'required|string|max:255',
-         ]);
-     
-         $status = Status::create([
-             'name' => $request->name,
-         ]);
-     
-         return response()->json([
-             'message' => 'Created Successfully',
-             'data' => new StatusResource($status)
-         ], 201);
-     }
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255'
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseHelper::error('Invalid Request', $validator->messages(), 422);
+        }
+
+        try {
+            $status = Status::create([
+                'name' => $request->name,
+            ]);
+
+            return ResponseHelper::success('Created Successfully', new StatusResource($status), 201);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
+    }
 
     public function show(Status $status)
     {
-        return new StatusResource($status);
+        return ResponseHelper::success('Request Successful', new StatusResource($status), 200);
     }
-
 
     public function update(Request $request, Status $status)
     {
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Field is required',
-                'error' => $validator->messages()
-            ], 422);
+            return ResponseHelper::error('Invalid Request', $validator->messages(), 422);
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
+        try {
+            $status->update([
+                'name' => $request->name,
+            ]);
 
-        $status->update([
-            'name' => $request->name,
-        ]);
-
-        return response()->json([
-            'message' => 'Updated Successfully',
-            'data' => new StatusResource($status)
-        ], 200);
+            return ResponseHelper::success('Updated Successfully', new StatusResource($status), 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 
     public function destroy(Status $status)
     {
-        $status->delete();
-        return response()->json([
-            'message' => 'Deleted Successfully',
-            'data' => new StatusResource(resource: $status)
-        ],200);
+        try {
+            $status->delete();
+            return ResponseHelper::success('Deleted Successfully', [], 200);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 }
