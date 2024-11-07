@@ -51,9 +51,27 @@ class TaskController extends Controller
         }
     }
 
-    public function show(Task $task)
+    public function show(Request $request)
     {
-        return ResponseHelper::success('Request Successful', new TaskResource($task), 200);
+        try {
+
+            // define the valid parameters
+            $requestParameters = $request->only(['system_id', 'mode_id', 'status_id', 'percentage', 'created_at', 'updated_at']);
+
+            $query = Task::query();
+
+            // append the request parameters in where clause
+            foreach ($requestParameters as $column => $value) {
+                if ($value) {
+                    $query->where($column, $value);
+                }
+            }
+
+            $tasks = $query->get();
+            return ResponseHelper::success('Tasks fetched successfully', $tasks);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
+        }
     }
 
     public function update(Request $request, Task $task)
