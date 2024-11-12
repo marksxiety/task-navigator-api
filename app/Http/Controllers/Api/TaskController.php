@@ -14,17 +14,36 @@ class TaskController extends Controller
     public function index()
     {
         try {
-            $tasks = Task::all();
+            // Eager load the related data (system, mode, and status)
+            $tasks = Task::with(['system', 'mode', 'status'])->get();
 
+            // Check if tasks are empty
             if ($tasks->isEmpty()) {
                 return ResponseHelper::success('No data available', [], 200);
             }
 
-            return ResponseHelper::success('Request Successful', TaskResource::collection($tasks), 200);
+            // Map through tasks to format the data as needed (subquery style)
+            $formattedTasks = $tasks->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'subject' => $task->subject,
+                    'system' => $task->system ? $task->system->name : null,
+                    'mode' => $task->mode ? $task->mode->name : null,
+                    'definition' => $task->definition,
+                    'status' => $task->status ? $task->status->name : null,
+                    'percentage' => $task->percentage,
+                    'added_by' => $task->added_by,
+                    'created_at' => $task->created_at,
+                    'updated_at' => $task->updated_at,
+                ];
+            });
+
+            return ResponseHelper::success('Request Successful', $formattedTasks, 200);
         } catch (\Exception $e) {
             return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
         }
     }
+
 
     public function store(Request $request)
     {
@@ -55,20 +74,35 @@ class TaskController extends Controller
     {
         try {
 
-            // define the valid parameters
-            $requestParameters = $request->only(['system_id', 'mode_id', 'status_id', 'percentage', 'created_at', 'updated_at']);
-
+            $validParameters = ['system_id', 'mode_id', 'status_id', 'percentage', 'created_at', 'updated_at'];
+            $requestParameters = $request->only($validParameters);
             $query = Task::query();
 
-            // append the request parameters in where clause
             foreach ($requestParameters as $column => $value) {
-                if ($value) {
+                if ($value !== null && $value !== '') {
                     $query->where($column, $value);
                 }
             }
 
+
             $tasks = $query->get();
-            return ResponseHelper::success('Tasks fetched successfully', $tasks);
+            $subqueriedTask = $tasks->map(function ($task) {
+                return [
+                    'id' => $task->id,
+                    'subject' => $task->subject,
+                    'system_id' => $task->system ? $task->system->name : null,
+                    'mode_id' => $task->mode ? $task->mode->name : null,
+                    'definition' => $task->definition,
+                    'status_id' => $task->status_id,
+                    'status_name' => $task->status ? $task->status->name : null,
+                    'percentage' => $task->percentage,
+                    'added_by' => $task->added_by,
+                    'created_at' => $task->created_at,
+                    'updated_at' => $task->updated_at
+                ];
+            });
+
+            return ResponseHelper::success('Tasks fetched successfully', $subqueriedTask);
         } catch (\Exception $e) {
             return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
         }
