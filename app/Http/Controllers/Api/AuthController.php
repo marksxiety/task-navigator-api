@@ -43,7 +43,10 @@ class AuthController extends Controller
 
                 return ResponseHelper::success('Registration Successful',[
                     'token_type' => 'Bearer',
-                    'token' => $token
+                    'token' => $token,
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'user_name' => $user->name
                 ], 200);
             } else {
                 return ResponseHelper::error('Registration unsuccessful', [], 500);
@@ -71,7 +74,10 @@ class AuthController extends Controller
 
             return ResponseHelper::success('Login Successful',[
                 'token_type' => 'Bearer',
-                'token' => $token
+                'token' => $token,
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'user_name' => $user->name
             ], 200);
         } catch (\Exception $e) {
             return ResponseHelper::error('An error occurred', $e->getMessage(), 500);
