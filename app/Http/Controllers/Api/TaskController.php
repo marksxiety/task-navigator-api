@@ -74,7 +74,7 @@ class TaskController extends Controller
     {
         try {
 
-            $validParameters = ['system_id', 'mode_id', 'status_id', 'percentage', 'created_at', 'updated_at'];
+            $validParameters = ['system_id', 'mode_id', 'status_id', 'percentage', 'created_at', 'updated_at', 'added_by'];
             $requestParameters = $request->only($validParameters);
             $query = Task::query();
 
