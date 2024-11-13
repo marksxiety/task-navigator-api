@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('definition');
             $table->foreignId('status_id')->constrained('statuses')->onDelete('cascade'); 
             $table->decimal('percentage', 5, 2)->default(0.00);
-            $table->string('added_by');
+            $table->integer('user_id');
             $table->timestamps();
         });
     }

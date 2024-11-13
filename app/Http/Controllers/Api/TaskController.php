@@ -32,7 +32,7 @@ class TaskController extends Controller
                     'definition' => $task->definition,
                     'status' => $task->status ? $task->status->name : null,
                     'percentage' => $task->percentage,
-                    'added_by' => $task->added_by,
+                    'user_id' => $task->user_id,
                     'created_at' => $task->created_at,
                     'updated_at' => $task->updated_at,
                 ];
@@ -54,7 +54,7 @@ class TaskController extends Controller
             'definition' => 'required|string|max:999',
             'status_id' => 'required|integer|exists:statuses,id',
             'percentage' => 'required|numeric|min:1|max:100',
-            'added_by' => 'required|string|max:255',
+            'user_id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -74,7 +74,7 @@ class TaskController extends Controller
     {
         try {
 
-            $validParameters = ['system_id', 'mode_id', 'status_id', 'percentage', 'created_at', 'updated_at', 'added_by'];
+            $validParameters = ['system_id', 'mode_id', 'status_id', 'percentage', 'created_at', 'updated_at', 'user_id'];
             $requestParameters = $request->only($validParameters);
             $query = Task::query();
 
@@ -96,7 +96,7 @@ class TaskController extends Controller
                     'status_id' => $task->status_id,
                     'status_name' => $task->status ? $task->status->name : null,
                     'percentage' => $task->percentage,
-                    'added_by' => $task->added_by,
+                    'user_id' => $task->user_id,
                     'created_at' => $task->created_at,
                     'updated_at' => $task->updated_at
                 ];
@@ -117,7 +117,7 @@ class TaskController extends Controller
             'definition' => 'required|string|max:999',
             'status_id' => 'required|integer|exists:statuses,id',
             'percentage' => 'required|numeric|min:1|max:100',
-            'added_by' => 'required|string|max:255',
+            'user_id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {

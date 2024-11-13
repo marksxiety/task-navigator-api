@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
-    protected $fillable = ['subject', 'system_id', 'mode_id', 'definition', 'status_id', 'percentage', 'added_by'];
+    protected $fillable = ['subject', 'system_id', 'mode_id', 'definition', 'status_id', 'percentage', 'user_id'];
 
     public function status()
     {
@@ -21,5 +21,10 @@ class Task extends Model
     public function mode()
     {
         return $this->belongsTo(Mode::class, 'mode_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(Mode::class, 'user_id');
     }
 }

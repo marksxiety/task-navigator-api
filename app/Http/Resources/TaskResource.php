@@ -22,7 +22,7 @@ class TaskResource extends JsonResource
             'definition' => $this->definition,
             'status_id' => $this->status_id,
             'percentage' => $this->percentage,
-            'added_by' => $this->added_by,
+            'user_id' => $this->user_id,
             'created_at' =>	$this->created_at,
             'updated_at' =>	$this->updated_at
         ];
